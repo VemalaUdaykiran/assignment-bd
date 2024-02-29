@@ -1,0 +1,7 @@
+redis:
+  host: localhost
+  db: 0
+  user: default
+  password:
+  port: 6379
+api_url: "http://localhost:3000/students"
