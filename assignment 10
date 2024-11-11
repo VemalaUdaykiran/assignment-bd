@@ -1,0 +1,89 @@
+<?php
+
+// Student Name: UdayKiran Vemala
+// Date: 11/09/2024
+
+$servername = "127.0.0.1";
+$username = "vemala88";
+$password = "1Purple5JEeP!";
+$dbname = "vemala88";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$state = isset($_GET['state']) ? $_GET['state'] : '';
+
+if (empty($state)) {
+    die("State parameter is required");
+}
+
+$sql = "SELECT 
+            customerNumber,
+            customerName,
+            contactLastName,
+            contactFirstName,
+            addressLine1,
+            city,
+            state,
+            postalCode,
+            country
+        FROM customers 
+        WHERE state = ?
+        ORDER BY customerName";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $state);
+$stmt->execute();
+$result = $stmt->get_result();
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Details by State</title>
+</head>
+<body>
+    <h2>Customer Details for State: <?php echo htmlspecialchars($state); ?></h2>
+    <table border="1">
+        <tr>
+            <th>Customer Number</th>
+            <th>Customer Name</th>
+            <th>Contact</th>
+            <th>Address Line 1</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Postal Code</th>
+            <th>Country</th>
+        </tr>
+        <?php
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $contact = htmlspecialchars($row['contactFirstName'] ?? '') . ' ' . 
+                          htmlspecialchars($row['contactLastName'] ?? '');
+                
+                echo "<tr>";
+                echo "<td>" . htmlspecialchars($row['customerNumber'] ?? '') . "</td>";
+                echo "<td>" . htmlspecialchars($row['customerName'] ?? '') . "</td>";
+                echo "<td>" . $contact . "</td>";
+                echo "<td>" . htmlspecialchars($row['addressLine1'] ?? '') . "</td>";
+                echo "<td>" . htmlspecialchars($row['city'] ?? '') . "</td>";
+                echo "<td>" . htmlspecialchars($row['state'] ?? '') . "</td>";
+                echo "<td>" . htmlspecialchars($row['postalCode'] ?? '') . "</td>";
+                echo "<td>" . htmlspecialchars($row['country'] ?? '') . "</td>";
+                echo "</tr>";
+            }
+        } else {
+            echo "<tr><td colspan='8'>No customers found for state: " . htmlspecialchars($state) . "</td></tr>";
+        }
+        ?>
+    </table>
+</body>
+</html>
+
+<?php
+$stmt->close();
+$conn->close();
+?>
